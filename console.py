@@ -73,7 +73,7 @@ class HBNBCommand(cmd.Cmd):
                 pline = pline[2].strip()  # pline is now str
                 if pline:
                     # check for *args or **kwargs
-                    if pline[0] is '{' and pline[-1] is'}'\
+                    if pline[0] == '{' and pline[-1] == '}'\
                             and type(eval(pline)) is dict:
                         _args = pline
                     else:
@@ -118,13 +118,41 @@ class HBNBCommand(cmd.Cmd):
         if not args:
             print("** class name missing **")
             return
-        elif args not in HBNBCommand.classes:
+
+        args = args.split(" ", 1)
+        if type(args) is list:
+            class_ = args[0]
+        else:
+            class_ = args
+
+        if class_ not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
-        new_instance = HBNBCommand.classes[args]()
+
+        new_instance = HBNBCommand.classes[class_]()
         storage.save()
         print(new_instance.id)
-        storage.save()
+        if type(args) is str:
+            return
+
+        key_value_pairs = args[-1].split()
+
+        for pair in key_value_pairs:
+            if '=' not in pair or ' ' in pair:
+                continue
+
+            split_pair = pair.split('=')
+            key = split_pair[0]
+            value = split_pair[1].replace('_', ' ')
+
+            if value.startswith('"') and value.endswith('"'):
+                value = value.strip('"')
+                if '"' in value and value[value.index('"') - 1] != '\\':
+                    continue
+            code = f'setattr(new_instance, key, value)'
+            eval(code)
+
+        new_instance.save()
 
     def help_create(self):
         """ Help information for the create method """
@@ -272,7 +300,7 @@ class HBNBCommand(cmd.Cmd):
                 args.append(v)
         else:  # isolate args
             args = args[2]
-            if args and args[0] is '\"':  # check for quoted arg
+            if args and args[0] == '\"':  # check for quoted arg
                 second_quote = args.find('\"', 1)
                 att_name = args[1:second_quote]
                 args = args[second_quote + 1:]
@@ -280,10 +308,10 @@ class HBNBCommand(cmd.Cmd):
             args = args.partition(' ')
 
             # if att_name was not quoted arg
-            if not att_name and args[0] is not ' ':
+            if not att_name and not args[0] == ' ':
                 att_name = args[0]
             # check for quoted val arg
-            if args[2] and args[2][0] is '\"':
+            if args[2] and args[2][0] == '\"':
                 att_val = args[2][1:args[2].find('\"', 1)]
 
             # if att_val was not quoted arg
@@ -319,6 +347,7 @@ class HBNBCommand(cmd.Cmd):
         """ Help information for the update class """
         print("Updates an object with new information")
         print("Usage: update <className> <id> <attName> <attVal>\n")
+
 
 if __name__ == "__main__":
     HBNBCommand().cmdloop()
