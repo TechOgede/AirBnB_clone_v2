@@ -5,6 +5,13 @@
 import os
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker, scoped_session
+from models.base_model import Base, BaseModel
+from models.user import User
+from models.place import Place
+from models.state import State
+from models.city import City
+from models.amenity import Amenity
+from models.review import Review
 
 
 class DBStorage:
@@ -22,8 +29,7 @@ class DBStorage:
                                       pool_pre_ping=True)
 
         if os.getenv('HBNB_ENV') == 'test':
-            metadata = MetaData(bind=self.__engine)
-            metadata.drop_all()
+            Base.metadata.drop_all(self.__engine)
 
     def all(self, cls=None):
         ''' Return all types of objects or only objects of type "cls"
@@ -32,18 +38,15 @@ class DBStorage:
         _objs = {}
 
         if cls:
-            objs_list = self.__session.query(cls).all()
+            objs_list = self.__session.query(cls)
             for obj in objs_list:
                 key = f'{obj.__class__.__name__}.{obj.id}'
                 _objs[key] = obj
 
         else:
-            metadata = MetaData(bind=self.__engine)
-            metadata.reflect()
-            tables = metadata.tables.keys()
+            tables = [User, State, City, Amenity, Place, Review]
             for table in tables:
-                objs_list = self.__session.query(metadata.tables[table]).all()
-                print(objs_list)
+                objs_list = self.__session.query(table)
                 for obj in objs_list:
                     key = f'{obj.__class__.__name__}.{obj.id}'
                     _objs[key] = obj
@@ -67,13 +70,6 @@ class DBStorage:
         '''Creates all tables in the database and creates the current
            database session
         '''
-        from models.base_model import Base, BaseModel
-        from models.user import User
-        from models.place import Place
-        from models.state import State
-        from models.city import City
-        from models.amenity import Amenity
-        from models.review import Review
         Base.metadata.create_all(self.__engine)
         sesh_fact = sessionmaker(bind=self.__engine, expire_on_commit=False)
         Session = scoped_session(sesh_fact)
