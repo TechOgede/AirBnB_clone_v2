@@ -8,6 +8,6 @@ class User(BaseModel, Base):
     __tablename__ = 'users'
     email = Column(String(128), nullable=False)
     password = Column(String(128), nullable=False)
-    first_name = Column(String(128), nullable=False)
-    last_name = Column(String(128), nullable=False)
-    places = relationship('Place', backref='user')
+    first_name = Column(String(128), default='N/A')
+    last_name = Column(String(128), default='N/A')
+    places = relationship('Place', cascade='all', backref='user')
