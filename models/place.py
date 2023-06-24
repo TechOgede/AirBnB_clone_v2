@@ -17,3 +17,15 @@ class Place(BaseModel, Base):
     price_by_night = Column(Integer, nullable=False, default=0)
     latitude = Column(Float, default='N/A')
     longitude = Column(Float, default='N/A')
+    reviews = relationship('Review', cascade='all', backref='place')
+
+    @property
+    def reviews(self):
+        ''' Relationship for File Storage'''
+        reviews = []
+        all_reviews = storage.all(Review)
+        for value in all_reviews.values():
+            if value.place_id == self.id:
+                reviews.append(value)
+
+        return reviews
