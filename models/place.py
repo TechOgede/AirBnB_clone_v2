@@ -4,6 +4,16 @@ from models.base_model import *
 from sqlalchemy import Float
 
 
+place_amenity = Table('place_amenity', Base.metadata,
+                      Column('place_id', String(60),
+                             ForeignKey('places.id'), nullable=False,
+                             primary_key=True)
+                      Column('amenity_id', String(60),
+                             ForeignKey('amenities.id'), nullable=False,
+                             primary_key=True)
+                      )
+
+
 class Place(BaseModel, Base):
     """ A place to stay """
     __tablename__ = 'places'
@@ -20,7 +30,12 @@ class Place(BaseModel, Base):
 
     reviews = relationship('Review', cascade='all, delete-orphan',
                            backref='place')
-    
+    amenities = relationship('Amenity', secondary=place_amenity,
+                             viewonly=False,
+                             back_populates='places_amenities')
+
+    amenity_ids = []
+
     @property
     def reviews(self):
         ''' Relationship for File Storage'''
@@ -31,3 +46,15 @@ class Place(BaseModel, Base):
                 reviews.append(value)
 
         return reviews
+
+    @property
+    def amenities(self):
+        ''' Relationship for File Storage'''
+        return self.amenity_ids
+
+    @amenities.setter
+    def amenities(self, obj):
+        ''' Setter that handles append method '''
+        if obj.__class__.__name__ == 'Amenity':
+            if obj.id not in self.amenity_ids:
+                self.amenity_ids.append(obj.id)
