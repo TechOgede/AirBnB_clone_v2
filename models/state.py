@@ -1,22 +1,23 @@
 #!/usr/bin/python3
 """ State Module for HBNB project """
 from models.base_model import *
-
+import os
 
 class State(BaseModel, Base):
     """ State class """
     __tablename__ = 'states'
     name = Column(String(128), nullable=False)
 
-    cities = relationship('City', cascade='all', backref='state')
+    if os.environ.get('HBNB_TYPE_STORAGE') == 'db':
+        cities = relationship('City', cascade='all', backref='state')
+    else:
+        @property
+        def cities(self):
+            '''Getter fpr the cities attr '''
+            cities_list = []
+            cities = storage.all(City)
+            for key, value in cities.items():
+                if value.state_id == self.id:
+                    cities_list.append(value)
 
-    @property
-    def cities(self):
-        '''Getter fpr the cities attr '''
-        cities_list = []
-        cities = storage.all(City)
-        for key, value in cities.items():
-            if value.state_id == self.id:
-                cities_list.append(value)
-
-        return cities_list
+            return cities_list
