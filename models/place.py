@@ -2,6 +2,7 @@
 """ Place Module for HBNB project """
 from models.base_model import *
 from sqlalchemy import Float
+import os
 
 
 place_amenity = Table('place_amenity', Base.metadata,
@@ -31,31 +32,31 @@ class Place(BaseModel, Base):
 
     reviews = relationship('Review', cascade='all, delete-orphan',
                            backref='place')
-    amenities = relationship('Amenity', secondary=place_amenity,
-                             viewonly=False,
-                             back_populates='place_amenities')
-
     amenity_ids = []
+    if os.getenv('HBNB_TYPE_STORAGE') == 'db':
+        amenities = relationship('Amenity', secondary=place_amenity,
+                                 viewonly=False,
+                                 back_populates='place_amenities')
+    else:
+        @property
+        def reviews(self):
+            ''' Relationship for File Storage'''
+            reviews = []
+            all_reviews = storage.all(Review)
+            for value in all_reviews.values():
+                if value.place_id == self.id:
+                    reviews.append(value)
 
-    @property
-    def reviews(self):
-        ''' Relationship for File Storage'''
-        reviews = []
-        all_reviews = storage.all(Review)
-        for value in all_reviews.values():
-            if value.place_id == self.id:
-                reviews.append(value)
+            return reviews
 
-        return reviews
+        @property
+        def amenities(self):
+            ''' Relationship for File Storage'''
+            return self.amenity_ids
 
-    @property
-    def amenities(self):
-        ''' Relationship for File Storage'''
-        return self.amenity_ids
-
-    @amenities.setter
-    def amenities(self, obj):
-        ''' Setter that handles append method '''
-        if obj.__class__.__name__ == 'Amenity':
-            if obj.id not in self.amenity_ids:
-                self.amenity_ids.append(obj.id)
+        @amenities.setter
+        def amenities(self, obj):
+            ''' Setter that handles append method '''
+            if obj.__class__.__name__ == 'Amenity':
+                if obj.id not in self.amenity_ids:
+                    self.amenity_ids.append(obj.id)
