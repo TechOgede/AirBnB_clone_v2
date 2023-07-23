@@ -14,6 +14,8 @@ class State(BaseModel, Base):
     else:
         @property
         def cities(self):
+            from models.city import City
+            from models import storage
             '''Getter fpr the cities attr '''
             cities_list = []
             cities = storage.all(City)
