@@ -17,8 +17,10 @@ class Place(BaseModel, Base):
     price_by_night = Column(Integer, nullable=False, default=0)
     latitude = Column(Float)
     longitude = Column(Float)
-    reviews = relationship('Review', cascade='all', backref='place')
 
+    reviews = relationship('Review', cascade='all, delete-orphan',
+                           backref='place')
+    
     @property
     def reviews(self):
         ''' Relationship for File Storage'''
