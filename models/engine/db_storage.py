@@ -74,3 +74,7 @@ class DBStorage:
         sesh_fact = sessionmaker(bind=self.__engine, expire_on_commit=False)
         Session = scoped_session(sesh_fact)
         self.__session = Session()
+
+    def close(self):
+        ''' Remove current session '''
+        self.__session.remove()
