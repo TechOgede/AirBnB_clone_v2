@@ -38,7 +38,7 @@ class DBStorage:
         _objs = {}
 
         if cls:
-            objs_list = self.__session.query(cls)
+            objs_list = self.__session.query(cls).all()
             for obj in objs_list:
                 key = f'{obj.__class__.__name__}.{obj.id}'
                 _objs[key] = obj
@@ -46,7 +46,7 @@ class DBStorage:
         else:
             tables = [User, State, City, Amenity, Place, Review]
             for table in tables:
-                objs_list = self.__session.query(table)
+                objs_list = self.__session.query(table).all()
                 for obj in objs_list:
                     key = f'{obj.__class__.__name__}.{obj.id}'
                     _objs[key] = obj
@@ -64,7 +64,7 @@ class DBStorage:
     def delete(self, obj=None):
         ''' Deletes from the current database session'''
         if obj:
-            self.__session.delete(obj, synchronize_session=False)
+            self.__session.delete(obj)
 
     def reload(self):
         '''Creates all tables in the database and creates the current
