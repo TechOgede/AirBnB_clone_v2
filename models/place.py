@@ -7,10 +7,11 @@ from sqlalchemy import Float
 place_amenity = Table('place_amenity', Base.metadata,
                       Column('place_id', String(60),
                              ForeignKey('places.id'), nullable=False,
-                             primary_key=True)
+                             primary_key=True),
                       Column('amenity_id', String(60),
                              ForeignKey('amenities.id'), nullable=False,
-                             primary_key=True)
+                             primary_key=True),
+                      mysql_collate='latin1_swedish_ci'
                       )
 
 
@@ -32,7 +33,7 @@ class Place(BaseModel, Base):
                            backref='place')
     amenities = relationship('Amenity', secondary=place_amenity,
                              viewonly=False,
-                             back_populates='places_amenities')
+                             back_populates='place_amenities')
 
     amenity_ids = []
 
